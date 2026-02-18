@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabase db;
     private SessionManager sessionManager;
     private ChipGroup chipGroupGenres;
+    private MovieAdapter.OnItemClickListener itemClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +43,15 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewMovies);
         chipGroupGenres = findViewById(R.id.chipGroupGenres);
 
+        itemClickListener = movie -> {
+            Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
+            intent.putExtra("movie_id", movie.getId());
+            startActivity(intent);
+        };
+
         new Thread(() -> {
             DatabaseInitializer.populateMovies(MainActivity.this);
-
             List<Movie> movies = db.movieDao().getAllMovies();
-
             runOnUiThread(() -> {
                 allMovies = movies;
                 setupAdapter(allMovies);
@@ -55,12 +60,26 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshMovies();
+    }
+
+    private void refreshMovies() {
+        new Thread(() -> {
+            List<Movie> updatedMovies = db.movieDao().getAllMovies();
+            runOnUiThread(() -> {
+                allMovies = updatedMovies;
+                if (adapter != null) {
+                    adapter.updateData(allMovies);
+                }
+            });
+        }).start();
+    }
+
     private void setupAdapter(List<Movie> movies) {
-        adapter = new MovieAdapter(movies, movie -> {
-            Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
-            intent.putExtra("movie_id", movie.getId());
-            startActivity(intent);
-        });
+        adapter = new MovieAdapter(movies, itemClickListener);
         recyclerView.setAdapter(adapter);
     }
 
@@ -81,8 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
         chipGroupGenres.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) {
-                adapter = new MovieAdapter(allMovies, null);
-                recyclerView.setAdapter(adapter);
+                adapter.updateData(allMovies);
             } else {
                 Chip selectedChip = findViewById(checkedIds.get(0));
                 String selectedGenre = selectedChip.getText().toString();
@@ -92,8 +110,7 @@ public class MainActivity extends AppCompatActivity {
                         filtered.add(movie);
                     }
                 }
-                adapter = new MovieAdapter(filtered, null);
-                recyclerView.setAdapter(adapter);
+                adapter.updateData(filtered);
             }
         });
     }
