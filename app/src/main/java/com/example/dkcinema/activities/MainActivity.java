@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabase db;
     private SessionManager sessionManager;
     private ChipGroup chipGroupGenres;
+    private Chip chipAll;
     private MovieAdapter.OnItemClickListener itemClickListener;
 
     @Override
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerViewMovies);
         chipGroupGenres = findViewById(R.id.chipGroupGenres);
+        chipAll = findViewById(R.id.chipAll);
 
         itemClickListener = movie -> {
             Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 allMovies = movies;
                 setupAdapter(allMovies);
                 setupGenreChips();
+                chipAll.setChecked(true);
             });
         }).start();
     }
@@ -84,6 +88,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupGenreChips() {
+        for (int i = 0; i < chipGroupGenres.getChildCount(); i++) {
+            View child = chipGroupGenres.getChildAt(i);
+            if (child != chipAll) {
+                chipGroupGenres.removeView(child);
+                i--;
+            }
+        }
+
         List<String> genres = new ArrayList<>();
         for (Movie movie : allMovies) {
             if (!genres.contains(movie.getGenre())) {
@@ -103,14 +115,18 @@ public class MainActivity extends AppCompatActivity {
                 adapter.updateData(allMovies);
             } else {
                 Chip selectedChip = findViewById(checkedIds.get(0));
-                String selectedGenre = selectedChip.getText().toString();
-                List<Movie> filtered = new ArrayList<>();
-                for (Movie movie : allMovies) {
-                    if (movie.getGenre().equals(selectedGenre)) {
-                        filtered.add(movie);
+                if (selectedChip == chipAll) {
+                    adapter.updateData(allMovies);
+                } else {
+                    String selectedGenre = selectedChip.getText().toString();
+                    List<Movie> filtered = new ArrayList<>();
+                    for (Movie movie : allMovies) {
+                        if (movie.getGenre().equals(selectedGenre)) {
+                            filtered.add(movie);
+                        }
                     }
+                    adapter.updateData(filtered);
                 }
-                adapter.updateData(filtered);
             }
         });
     }
