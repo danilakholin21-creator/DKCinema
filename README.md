@@ -4,7 +4,7 @@
 
 ---
 
-[![Скачать APK](https://img.shields.io/badge/Скачать-APK-blue?style=for-the-badge&logo=android)](./app-debug.apk)
+[![Скачать APK](https://img.shields.io/badge/Скачать-APK-blue?style=for-the-badge&logo=android)](./DKCinemaMG.apk)
 
 ---
 
