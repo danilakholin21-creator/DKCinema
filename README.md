@@ -4,7 +4,7 @@
 
 ---
 
-📲 **[Скачать APK](./DKCinemaMG.apk)**
+<a href="./DKCinemaMG.apk" download style="display: inline-block; padding: 10px 20px; background-color: #3DDC84; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">📲 Скачать APK</a>
 
 ---
 
